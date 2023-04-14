@@ -43,6 +43,7 @@ public class Test {
                 //方法二：
             }else {
                 System.out.println(obj.toString());
+                System.out.println("年后");
             }
         }
         
