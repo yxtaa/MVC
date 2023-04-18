@@ -27,16 +27,9 @@ public class SpServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setCharacterEncoding("UTF-8");
-        //response.setHeader("Content-type","text/html;charset=UTF-8");
-
         response.setContentType("text/html;charset=UTF-8");
-        //request.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
-
         SpDao spDao = new SpDaoImpl();
-        //List<Bazy> bazyList = spDao.executeStoredProcedure("吴连香");
-        //System.out.println(bazyList.get(0).getXm());
-
 
         String s = ReadFile.readSqlFile("C:\\Users\\Administrator\\IdeaProjects\\mvc\\out\\artifacts" +
                 "\\mvc01_war_exploded\\WEB-INF\\classes\\resources\\sql\\22.sql");

@@ -143,7 +143,6 @@ public class SpDaoImpl implements SpDao {
     }
 
     /**
-     *
      * @param procedureName 存储过程名称
      * @param inParams      存储过程输入参数
      * @param oracleTypes   存储过程输出参数
@@ -184,22 +183,22 @@ public class SpDaoImpl implements SpDao {
                         // 处理字符串类型的输出参数
                         Object varValue = cstmt.getObject(inParams.length + i + 1);
                         Map<String, Object> varMap = new HashMap<>();
-                        varMap.put("placeHolder" + (inParams.length + i + 1), varValue);
+                        varMap.put("输出结果" + (i + 1), varValue);
                         rvList.add(varMap);
                         break;
                     case OracleTypes.NUMBER:
                         // 处理数字类型的输出参数
                         Object numValue = cstmt.getObject(inParams.length + i + 1);
                         Map<String, Object> numMap = new HashMap<>();
-                        numMap.put("placeHolder" + (inParams.length + i + 1), numValue);
+                        numMap.put("输出结果" + (i + 1), numValue);
                         rvList.add(numMap);
                         break;
                     case OracleTypes.DATE:
                         // 处理日期类型的输出参数
                         //...
                         Object valueDate = cstmt.getObject(inParams.length + i + 1);
-                        Map<String,Object> dateMap = new HashMap<>();
-                        dateMap.put("placeHolder" + (inParams.length + i + 1),valueDate);
+                        Map<String, Object> dateMap = new HashMap<>();
+                        dateMap.put("placeHolder" + (inParams.length + i + 1), valueDate);
                         rvList.add(dateMap);
                         break;
                     case OracleTypes.TIMESTAMP:

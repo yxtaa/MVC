@@ -24,9 +24,9 @@ public class Test {
         //List<Bazy> bazyList = spDao.executeStoredProcedure("吴连香");
         //System.out.println(bazyList.get(0).getXm());
 
-        String name = "YXT_TEST";
-        String[] inParams = {"吴连香"};
-        int[] outParams = {OracleTypes.CURSOR,OracleTypes.VARCHAR,OracleTypes.DATE,OracleTypes.NUMBER};
+        String name = "jsp_住院处";
+        String[] inParams = {"23012"};
+        int[] outParams = {OracleTypes.CURSOR,OracleTypes.VARCHAR};
         List<Map<String,Object>> mapList = spDao.executeStoredProcedure(name, inParams, outParams);
         String string = JSON.toJSONString(mapList);
         System.out.println(string);
