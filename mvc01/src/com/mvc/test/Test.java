@@ -1,19 +1,12 @@
 
 package com.mvc.test;
 
-
 import com.alibaba.fastjson2.JSON;
 import com.mvc.dao.SpDao;
 import com.mvc.dao.impl.SpDaoImpl;
-import com.mvc.pojo.Bazy;
-import com.mvc.utils.Ojdbc;
 import oracle.jdbc.OracleTypes;
 
-
-
 import java.sql.SQLException;
-import java.sql.SQLOutput;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +33,7 @@ public class Test {
                     Object value = entry.getValue();
                     System.out.println(key + ":" + value);
                 }
+
                 //方法二：
             }else {
                 System.out.println(obj.toString());

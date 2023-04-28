@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>住院结算</title>
+</head>
+<body>
+<!--输入住院号：<input type="text" id="zyh">
+<button id="btn">确定</button>
+<hr>-->
+
+输入住院号：<input type="text" id="inputText">
+<button onclick="sendRequest()">确定</button>
+<br>
+<HR>
+<div id="div">
+    运行结果...
+</div>
+</body>
+<script type="text/javascript">
+    //方法一：
+    document.getElementById("btn").onclick = function () {
+
+        var isSend = confirm("确定发送请求吗？");
+        if (!isSend) {
+            return; // 中断请求发送
+        }
+
+        //1.创建XHR对象 2.注册回调函数 3.开启通道 4.发送请求
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && this.status === 200) {
+                //var data = JSON.parse(responseText)
+                document.getElementById("div").innerHTML = xhr.responseText;
+            }
+        }
+        var zyh = document.getElementById("zyh").value;
+        xhr.open("get", "/mvc01_war_exploded/servlet/SpServlet01?zyh=" + zyh, true);
+        xhr.send();
+    }
+
+    //方法二：
+    function sendRequest() {
+
+        var isSend = confirm("确定发送请求吗？");
+        if (!isSend) {
+            return; // 中断请求发送
+        }
+        // 创建XMLHttpRequest对象
+        let xhr = new XMLHttpRequest();
+
+        // 设置请求方式和请求地址
+        var inputText = document.getElementById("inputText").value;
+        var url = "/mvc01_war_exploded/servlet/SpServlet01"
+        xhr.open('GET', url + "?zyh=" + inputText, true);
+
+        // 设置回调函数，处理响应结果
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // 处理响应结果
+                document.getElementById("div").innerHTML = xhr.responseText;
+            }
+        };
+
+        // 发送请求
+        xhr.send();
+    }
+</script>
+</html>

@@ -227,7 +227,7 @@ public class SpDaoImpl implements SpDao {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e);
         } finally {
             Ojdbc.closeCstmt(rs, cstmt, conn);
         }

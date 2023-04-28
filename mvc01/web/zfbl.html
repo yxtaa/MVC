@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>自负比例</title>
+</head>
+<body>
+
+<h3>自付比例不存在</h3>
+输入医保编码（格式：不带_SI）：<input type="text" id="inputText">
+<button onclick="sendRequest()">确定</button>
+<br><HR>
+<div id="div1"></div>
+
+<h3>每日更新自负比例</h3>
+输入时间（格式：20230101）：<input type="text" id="inputText2">
+<button onclick="sendRequest()">确定</button>
+<br><HR>
+<div id="div2"></div>
+
+</body>
+<script type="text/javascript">
+
+    function sendRequest() {
+
+        var isSend = confirm("确定发送请求吗？");
+        if (!isSend) {
+            return; // 中断请求发送
+        }
+
+        // 创建XMLHttpRequest对象
+        let xhr = new XMLHttpRequest();
+
+        // 设置请求方式和请求地址
+        var inputText = document.getElementById("inputText").value;
+        var url = "/mvc01_war_exploded/servlet/SpServlet01"
+        xhr.open('GET', url + "?zyh=" + inputText, true);
+
+        // 设置回调函数，处理响应结果
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // 处理响应结果
+                document.getElementById("div1").innerHTML = xhr.responseText;
+            }
+        };
+
+        // 发送请求
+        xhr.send();
+    }
+</script>
+</html>
