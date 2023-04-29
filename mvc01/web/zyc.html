@@ -9,18 +9,18 @@
 <!--输入住院号：<input type="text" id="zyh">
 <button id="btn">确定</button>
 <hr>-->
-
-输入住院号：<input type="text" id="inputText">
+<h2>出院结算报错运行</h2>
+输入住院号<input type="text" id="inputText">
 <button onclick="sendRequest()">确定</button>
-<br>
-<HR>
-<div id="div">
-    运行结果...
-</div>
+
+<br><HR>
+<h3>运行结果：</h3>
+<div id="div"></div>
+
 </body>
 <script type="text/javascript">
     //方法一：
-    document.getElementById("btn").onclick = function () {
+/*    document.getElementById("btn").onclick = function () {
 
         var isSend = confirm("确定发送请求吗？");
         if (!isSend) {
@@ -35,10 +35,10 @@
                 document.getElementById("div").innerHTML = xhr.responseText;
             }
         }
-        var zyh = document.getElementById("zyh").value;
-        xhr.open("get", "/mvc01_war_exploded/servlet/SpServlet01?zyh=" + zyh, true);
+        var zyh = document.getElementById("inputText").value;
+        xhr.open("get", "/mvc01_war_exploded/servlet/SpServlet?zyh=" + zyh, true);
         xhr.send();
-    }
+    }*/
 
     //方法二：
     function sendRequest() {
@@ -52,8 +52,8 @@
 
         // 设置请求方式和请求地址
         var inputText = document.getElementById("inputText").value;
-        var url = "/mvc01_war_exploded/servlet/SpServlet01"
-        xhr.open('GET', url + "?zyh=" + inputText, true);
+        var url = "/mvc01_war_exploded/servlet/SpServlet"
+        xhr.open('GET', url + "?inputText=" + inputText, true);
 
         // 设置回调函数，处理响应结果
         xhr.onreadystatechange = function () {

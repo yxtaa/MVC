@@ -7,43 +7,89 @@
 </head>
 <body>
 
-<h3>自付比例不存在</h3>
-输入医保编码（格式：不带_SI）：<input type="text" id="inputText">
+<h3>同步his自负比例</h3>
+输入医保编码（格式：不带_SI）<input type="text" id="inputText" size="25">
 <button onclick="sendRequest()">确定</button>
-<br><HR>
-<div id="div1"></div>
+<button onclick="location.reload()">重置</button>
+<BR>
+<h3>结果：</h3>
+<div id="div">
+
+</div>
+<table id="myTable" style="border: black solid 1px;text-align: center">
+    <thead>
+    <tr>
+        <!-- 表格行将在JavaScript代码中创建 -->
+    </tr>
+    </thead>
+    <tbody>
+    <!-- 表格行将在JavaScript代码中创建 -->
+    </tbody>
+</table>
+<HR>
 
 <h3>每日更新自负比例</h3>
-输入时间（格式：20230101）：<input type="text" id="inputText2">
-<button onclick="sendRequest()">确定</button>
-<br><HR>
-<div id="div2"></div>
+输入时间（格式：20230101）<input type="text" id="inputText2">
+<button onclick="sendRequestTime()">确定</button>
+<BR>
+<div id="div2">
 
+</div>
+<HR>
 </body>
+
 <script type="text/javascript">
-
     function sendRequest() {
-
         var isSend = confirm("确定发送请求吗？");
         if (!isSend) {
-            return; // 中断请求发送
+            return; //中断请求发送
         }
 
         // 创建XMLHttpRequest对象
-        let xhr = new XMLHttpRequest();
+        var xhr = new XMLHttpRequest();
 
         // 设置请求方式和请求地址
         var inputText = document.getElementById("inputText").value;
-        var url = "/mvc01_war_exploded/servlet/SpServlet01"
-        xhr.open('GET', url + "?zyh=" + inputText, true);
+        var url = "/mvc01_war_exploded/Servlet/ZfblServlet";
+        xhr.open('GET', url + "?inputText=" + inputText);
 
         // 设置回调函数，处理响应结果
         xhr.onreadystatechange = function () {
+            console.log(xhr.readyState);
             if (xhr.readyState === 4 && xhr.status === 200) {
                 // 处理响应结果
-                document.getElementById("div1").innerHTML = xhr.responseText;
+                var jsonArray = JSON.parse(xhr.responseText);
+                // 获取表格元素
+                var table = document.getElementById('myTable');
+                // 将表格内容清空
+                table.innerHTML = "";
+
+                //插入表头
+                var row = table.insertRow(0);
+                var j = 0;
+                for (var key in jsonArray[0]) {
+                    if (jsonArray[0].hasOwnProperty(key)) {
+                        var cell = row.insertCell(j);
+                        cell.innerHTML = key;
+                        j++;
+                    }
+                }
+                // 循环遍历JSON数组，并创建表格行
+                for (var i = 0; i < jsonArray.length; i++) {
+                    var row = table.insertRow(i + 1);
+                    var j = 0;
+                    for (var key in jsonArray[i]) {
+                        if (jsonArray[i].hasOwnProperty(key)) {
+                            var cell = row.insertCell(j);
+                            var propValue = jsonArray[i][key];
+                            cell.innerHTML = propValue;
+                            console.log(key + ': ' + propValue);
+                            j++;
+                        }
+                    }
+                }
             }
-        };
+        }
 
         // 发送请求
         xhr.send();

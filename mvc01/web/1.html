@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>自负比例</title>
+</head>
+<body>
+
+<h3>自付比例不存在</h3>
+输入医保编码（格式：不带_SI）<input type="text" id="inputText" size="25">
+<button onclick="sendRequest()">确定</button>
+<BR>
+<h3>结果：</h3>
+<div id="div">
+
+</div>
+<!--<table id="myTable" border="1px">
+    <thead>
+    <tr>
+        <th>医保项目编码</th>
+        <th>医保项目名称</th>
+        <th>人群类别</th>
+        <TH>起始日期</TH>
+        <th>终止日期</th>
+        <th>自负比例</th>
+    </tr>
+    </thead>
+    <tbody>
+    &lt;!&ndash; 表格行将在JavaScript代码中创建 &ndash;&gt;
+    </tbody>
+</table>-->
+<HR>
+
+<h3>每日更新自负比例</h3>
+输入时间（格式：20230101）<input type="text" id="inputText2">
+<button onclick="sendRequestTime()">确定</button>
+<BR>
+<div id="div2">
+
+</div>
+<HR>
+</body>
+
+<script type="text/javascript">
+  function sendRequest() {
+    /*        var isSend = confirm("确定发送请求吗？");
+            if (!isSend) {
+                return; //中断请求发送
+            }*/
+    // 创建XMLHttpRequest对象
+    var xhr = new XMLHttpRequest();
+    console.log("xhr");
+
+    // 设置请求方式和请求地址
+    var inputText = document.getElementById("inputText").value;
+    var url = "/mvc01_war_exploded/Servlet/ZfblServlet";
+
+    xhr.open('GET', url + "?inputText=" + inputText);
+    console.log("open");
+    console.log(xhr.readyState);
+    // 设置回调函数，处理响应结果
+    xhr.onreadystatechange = function () {
+      console.log(xhr.readyState);
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        // 处理响应结果
+        var jsonArray = JSON.parse(xhr.responseText);
+        // 循环遍历JSON数组，并创建表格行
+        for (var i = 0; i < jsonArray.length - 1; i++) {
+          var ybxmbm = jsonArray[i].医保项目编码;
+          var ybxmmc = jsonArray[i].医保项目名称;
+          var rqlb = jsonArray[i].人群类别;
+          var qsrq = jsonArray[i].起始日期;
+          var zzrq = jsonArray[i].终止日期;
+          var zfbl = jsonArray[i].自负比例;
+          document.getElementById("div").innerHTML += ybxmbm + "  " + ybxmmc + "  " + rqlb + "  " + qsrq + "  " + zzrq + "  " + zfbl + "<br>" ;
+        }
+      }
+    }
+
+    // 发送请求
+    xhr.send();
+  }
+</script>
+</html>
