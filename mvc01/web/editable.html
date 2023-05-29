@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body><table>
+  <thead>
+  <tr>
+    <th>名称</th>
+    <th>年龄</th>
+    <th>操作</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td class="editable">张三</td>
+    <td class="editable">18</td>
+    <td><button onclick="deleteRow(this)">删除</button></td>
+  </tr>
+  <tr>
+    <td class="editable">李四</td>
+    <td class="editable">20</td>
+    <td><button onclick="deleteRow(this)">删除</button></td>
+  </tr>
+  </tbody>
+</table>
+</body>
+<script type="text/javascript">
+  // 获取所有可编辑的单元格
+  const editableCells = document.querySelectorAll('.editable');
+
+  // 循环遍历可编辑单元格，给每个单元格添加双击事件
+  editableCells.forEach(cell => {
+    cell.addEventListener('dblclick', function() {
+      // 创建一个文本框，将单元格中的内容设置为文本框的值
+      const input = document.createElement('input');
+      input.value = this.innerText;
+
+      // 将文本框替换为单元格
+      this.innerHTML = '';
+      this.appendChild(input);
+
+      // 选中文本框的内容
+      input.focus();
+      input.select();
+
+      // 给文本框添加键盘事件，当按下回车键时保存编辑内容
+      input.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+          // 将编辑后的内容保存回单元格，并将文本框替换为单元格
+          const value = this.value;
+          const cell = this.parentNode;
+          cell.innerHTML = value;
+        }
+      });
+    });
+  });
+
+  // 删除行的函数
+  function deleteRow(button) {
+    const row = button.parentNode.parentNode;
+    row.parentNode.removeChild(row);
+  }
+</script>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>增删改+自动生成表格</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 0.2em;
+            width: 500px;
+            /* white-space: nowrap;*/
+            text-align: center;
+        }
+
+        thead {
+            background-color: gainsboro;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+    </style>
+</head>
+<body>
+<table id="myTable">
+
+</table>
+<br>
+<button onclick="addRow('myTable')">添加</button>
+
+</body>
+<script type="text/javascript">
+    // 假设您有一个JSON数组
+    var jsonArray = [
+        {name: '张三', age: 18, gender: '男'},
+        {name: '李四', age: 20, gender: '女'},
+        {name: '王五', age: 22, gender: '男'}
+    ];
+
+    generateTableData(jsonArray, "myTable");
+
+    /*-------根据json数组字符串自动生成表格--------*/
+    function generateTableData(data, tableID) {
+        // 获取表对象
+        var table = document.getElementById(tableID);
+        // 创建表头
+        var tableHead = table.createTHead();
+        var tableHeadRow = tableHead.insertRow();
+        //遍历json键值
+        for (var key in data[0]) {
+            var th = document.createElement("th");
+            th.textContent = key.toUpperCase();
+            tableHeadRow.appendChild(th);
+        }
+        //添加操作列
+        var th = document.createElement("th");
+        var lastCell = tableHeadRow.appendChild(th);
+        lastCell.innerHTML = "操作";
+
+        // 循环遍历JSON数组，并创建表格（不包括json最后一个）
+        var tableBody = table.createTBody();
+        for (var i = 0; i < jsonArray.length - 1; i++) {
+            var tableBodyRow = tableBody.insertRow();
+            var j = 0;
+            for (var key in jsonArray[i]) {
+                if (jsonArray[i].hasOwnProperty(key)) {
+                    var cell = tableBodyRow.insertCell(j);
+                    cell.innerHTML = jsonArray[i][key];
+                    j++;
+                }
+            }
+            //新增最后一列
+            var lastCell = tableBodyRow.insertCell();
+            lastCell.innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+        }
+
+        // 创建表格数据
+        var tableBody = table.createTBody();
+        data.forEach(function (item) {
+            var tableBodyRow = tableBody.insertRow();
+            Object.values(item).forEach(function (value) {
+                var tableBodyCell = tableBodyRow.insertCell();
+                tableBodyCell.innerHTML = value;
+            });
+            var lastCell = tableBodyRow.insertCell();
+            lastCell.innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+        });
+    }
+
+    /*-------添加行--------*/
+    function addRow(tableID) {
+        var tableBody = document.getElementById(tableID).getElementsByTagName('tbody')[0];
+        var tableHead = document.getElementById(tableID).getElementsByTagName('thead')[0];
+        //获取表格列数
+        var columnCount = tableHead.getElementsByTagName('th').length;
+        alert(columnCount);
+        var index = getColumnIndex(tableID, "AGE");
+        alert(index)
+        var newRow = tableBody.insertRow();
+        for (let i = 0; i < columnCount; i++) {
+            if (i == columnCount - 1) {
+                var cell = newRow.insertCell(i);
+                cell.innerHTML = "<button onclick='saveRow(this)'>保存</button> <button onclick='cancelRow(this)'>取消</button>"
+            } else {
+                var cell = newRow.insertCell(i);
+                cell.innerHTML = "<input type='text' class='editable'>"
+            }
+        }
+    }
+
+    /*-------编辑行--------*/
+    function editRow(button) {
+        var row = button.parentNode.parentNode;
+        var cells = row.getElementsByTagName("td");//列数或单元格数量
+        var index = getColumnIndex("myTable", "AGE");
+        for (let i = 0; i < cells.length; i++) {
+            if (i == cells.length - 1) {
+                cells[i].innerHTML = "<button onclick='updateRow(this)'>更新</button> <button style='background-color: #ff2600' onclick='cancelRow(this)'>取消</button>";
+            } else if (i == index) {
+                cells[i].setAttribute("original-value", cells[i].innerText);
+                cells[i].innerHTML = "<input style='background-color: lightblue' type='text' value='" + cells[i].innerText + "'>";
+            }
+        }
+    }
+
+    /*-------删除行--------*/
+    function deleteRow(button) {
+        var row = button.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    }
+
+    /*-------保存行--------*/
+    function saveRow(button) {
+        var row = button.parentNode.parentNode;
+        var cells = row.getElementsByTagName("td");
+        var index = getColumnIndex("myTable", "AGE");
+        for (let i = 0; i < cells.length; i++) {
+            if (i == cells.length - 1) {
+                cells[i].innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+            } else {
+                cells[i].innerHTML = cells[i].getElementsByTagName("input")[0].value;
+            }
+        }
+    }
+
+    /*-------更新行：只能更新特定列的数据--------*/
+    function updateRow(button) {
+        var row = button.parentNode.parentNode;
+        var cells = row.getElementsByTagName("td");
+        var index = getColumnIndex("myTable", "AGE");
+        for (let i = 0; i < cells.length; i++) {
+            if (i == cells.length - 1) {
+                cells[i].innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+            } else if (i == index) {
+                cells[i].innerHTML = cells[i].getElementsByTagName("input")[0].value;
+            }
+        }
+        alert(cells[index].innerText);
+
+        /*---AJAX请求---*/
+    }
+
+    /*-------取消行--------*/
+    function cancelRow(button) {
+        var row = button.parentNode.parentNode;
+        var cells = row.getElementsByTagName("td");
+        var index = getColumnIndex("myTable", "AGE");
+        for (let i = 0; i < cells.length; i++) {
+            if (i == cells.length - 1) {
+                cells[i].innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+            } else if (i == index) {
+                cells[i].innerHTML = cells[i].getAttribute("original-value");
+            }
+        }
+    }
+
+    /*---------------获取表格中某一列的索引--------------*/
+    function getColumnIndex(tableID, columnName) {
+        //获取表格对象
+        var table = document.getElementById(tableID);
+
+        // 获取头部行对象
+        const headerRow = table.querySelector('thead tr');
+
+        // 获取所有表头单元格对象
+        const headerCells = headerRow.querySelectorAll('th');
+
+        // 定义一个变量来存储“年龄”列的列号
+        let columnIndex = null;
+
+        // 遍历表头单元格对象，找到列的列号
+        headerCells.forEach((cell, index) => {
+            if (cell.innerText === columnName) {
+                columnIndex = index;
+            }
+        });
+        return columnIndex;
+    }
+
+    /*---------------为表格中某一列单元格添加双击编辑--------------*/
+
+</script>
+</html>

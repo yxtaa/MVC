@@ -178,27 +178,27 @@ public class SpDaoImpl implements SpDao {
 
             //获取输出参数
             for (int i = 0; i < oracleTypes.length; i++) {
-                switch (oracleTypes[i]) {//
+                Object value = cstmt.getObject(inParams.length + i + 1);
+                Map<String, Object> map = new HashMap<>();
+                switch (oracleTypes[i]) {
                     case OracleTypes.VARCHAR:
                         // 处理字符串类型的输出参数
-                        Object varValue = cstmt.getObject(inParams.length + i + 1);
-                        Map<String, Object> varMap = new HashMap<>();
-                        varMap.put("输出结果" + (i + 1), varValue);
-                        rvList.add(varMap);
+                        //Map<String, Object> varMap = new HashMap<>();
+                        map.put("输出结果" + (i + 1), value);
+                        rvList.add(map);
                         break;
                     case OracleTypes.NUMBER:
                         // 处理数字类型的输出参数
-                        Object numValue = cstmt.getObject(inParams.length + i + 1);
+                        //Object numValue = cstmt.getObject(inParams.length + i + 1);
                         Map<String, Object> numMap = new HashMap<>();
-                        numMap.put("输出结果" + (i + 1), numValue);
+                        numMap.put("输出结果" + (i + 1), value);
                         rvList.add(numMap);
                         break;
                     case OracleTypes.DATE:
                         // 处理日期类型的输出参数
-                        //...
                         Object valueDate = cstmt.getObject(inParams.length + i + 1);
                         Map<String, Object> dateMap = new HashMap<>();
-                        dateMap.put("placeHolder" + (inParams.length + i + 1), valueDate);
+                        dateMap.put("输出结果" + (i + 1), valueDate);
                         rvList.add(dateMap);
                         break;
                     case OracleTypes.TIMESTAMP:
@@ -233,6 +233,7 @@ public class SpDaoImpl implements SpDao {
         }
         return rvList;//最后返回这个 List 集合
     }
+
 }
 
 

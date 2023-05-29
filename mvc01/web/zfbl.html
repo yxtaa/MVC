@@ -1,98 +1,757 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>自负比例</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 0.2em;
+        }
+        thead {
+            background-color: gainsboro;
+        }
+
+    </style>
 </head>
+
 <body>
-
-<h3>同步his自负比例</h3>
-输入医保编码（格式：不带_SI）<input type="text" id="inputText" size="25">
-<button onclick="sendRequest()">确定</button>
-<button onclick="location.reload()">重置</button>
+<!--查询更新比例-->
+<h3>查询比例和更新比例</h3>
+输入医保编码（不带_SI）<input type="text" id="inputText" size="30">
+<button onclick="sendRequest()" id="myBtn">提交</button>
+<button onclick="clear1()" id="clsBtn">清空</button>
 <BR>
-<h3>结果：</h3>
-<div id="div">
-
-</div>
-<table id="myTable" style="border: black solid 1px;text-align: center">
-    <thead>
-    <tr>
-        <!-- 表格行将在JavaScript代码中创建 -->
-    </tr>
-    </thead>
-    <tbody>
+<div id="msg1"></div>
+<h4 id="h" style="color: red"></h4>
+<table id="myTable" style="text-align: center;">
     <!-- 表格行将在JavaScript代码中创建 -->
-    </tbody>
 </table>
 <HR>
 
-<h3>每日更新自负比例</h3>
-输入时间（格式：20230101）<input type="text" id="inputText2">
-<button onclick="sendRequestTime()">确定</button>
-<BR>
-<div id="div2">
+<!--修改住院费用自负比例-->
+<h3>修改比例和屏蔽费用</h3>
+<form id="myForm">
+    输入住院号：<input type="text" id="input1" onkeyup="this.value=this.value.replace(/[^0-9]/g,'');"><BR>
+    输入医保编码或名称：<input type="text" id="input2" size="30" required><BR>
+    <!--    <button onclick="sendRequest3()" id="myBtn3">提交</button>-->
+    <input type="submit" value="提交">
+    <button id="clsBtn3" onclick="clear3()">清空</button>
+    <button id="clsBtn33" onclick="">历史查询</button>
+    <BR>
+</form>
+<div id="msg3"></div>
+<h3 id="h3" style="color: red"></h3>
+<table id="myTable3" style="text-align: center">
+    <!-- 表格将在JavaScript代码中创建 -->
+</table>
 
-</div>
+<div id="msg4"></div>
+<h3 id="h4" style="color: red"></h3>
+<table id="myTable4" style="text-align: center" class="diwei">
+    <!-- 表格将在JavaScript代码中创建 -->
+</table>
+<hr>
+
+<!--每日更新比例-->
+<h3>每日更新自负比例</h3>
+输入时间（格式：20230101）<input type="text" id="inputText2" onkeyup="this.value=this.value.replace(/[^0-9]/g,'');"
+                              required>
+<button onclick="sendRequest2()" id="myBtn2">提交</button>
+<button id="clsBtn2" onclick="clear2()">清空</button>
+<button>定时</button>
+<BR>
+<div id="msg"></div>
+<h3 id="h2" style="color: red"></h3>
+<table id="myTable2" style="text-align: left">
+    <!-- 表格将在JavaScript代码中创建 -->
+</table>
 <HR>
+
 </body>
 
 <script type="text/javascript">
+
+    /*AJAX请求1 单个比例查询更新*/
     function sendRequest() {
+        var inputText = document.getElementById("inputText").value;
+        if (!checkInput(inputText)) {
+            alert("输入有误！");
+            return;
+        }
         var isSend = confirm("确定发送请求吗？");
         if (!isSend) {
-            return; //中断请求发送
+            return;
         }
-
         // 创建XMLHttpRequest对象
         var xhr = new XMLHttpRequest();
 
         // 设置请求方式和请求地址
-        var inputText = document.getElementById("inputText").value;
-        var url = "/mvc01_war_exploded/Servlet/ZfblServlet";
-        xhr.open('GET', url + "?inputText=" + inputText);
+        xhr.open('GET', "/mvc01_war_exploded/Servlet/ZfblServlet?inputText=" + inputText);
 
         // 设置回调函数，处理响应结果
         xhr.onreadystatechange = function () {
-            console.log(xhr.readyState);
             if (xhr.readyState === 4 && xhr.status === 200) {
-                // 处理响应结果
+                // 将响应文本解析为json
                 var jsonArray = JSON.parse(xhr.responseText);
+
+                //获取存储过程的最后一个返回值
+                document.getElementById("h").innerHTML = jsonArray[jsonArray.length - 1]["输出结果2"];
+
                 // 获取表格元素
                 var table = document.getElementById('myTable');
                 // 将表格内容清空
                 table.innerHTML = "";
 
-                //插入表头
-                var row = table.insertRow(0);
-                var j = 0;
-                for (var key in jsonArray[0]) {
-                    if (jsonArray[0].hasOwnProperty(key)) {
-                        var cell = row.insertCell(j);
-                        cell.innerHTML = key;
-                        j++;
-                    }
+                //生成表格数据
+                if (jsonArray.length > 1) {
+                    generateTable1(jsonArray, "myTable");
                 }
-                // 循环遍历JSON数组，并创建表格行
-                for (var i = 0; i < jsonArray.length; i++) {
-                    var row = table.insertRow(i + 1);
-                    var j = 0;
-                    for (var key in jsonArray[i]) {
-                        if (jsonArray[i].hasOwnProperty(key)) {
-                            var cell = row.insertCell(j);
-                            var propValue = jsonArray[i][key];
-                            cell.innerHTML = propValue;
-                            console.log(key + ': ' + propValue);
-                            j++;
-                        }
-                    }
+            }
+        }
+        // 发送请求
+        xhr.send();
+    }
+
+    /*AJAX请求2 每日更新比例*/
+    function sendRequest2() {
+        var inputText = document.getElementById("inputText2").value;
+        if (!checkInputNum(inputText)) {
+            alert("输入有误！");
+            return;
+        }
+        var isSend = confirm("确定发送请求吗？");
+        if (!isSend) {
+            return;//中断
+        }
+
+        /*1.创建对象 2.注册回调函数 3.打开 4.发送*/
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            //请求状态信息
+            document.getElementById("msg").innerHTML = getReadyStateMessage(this.readyState);
+
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    //Http状态码
+                    document.getElementById("msg").innerHTML += "。" + getStatusMessage(this.status);
+                    // 解析
+                    var jsonArray = JSON.parse(xhr.responseText);
+                    //输出结果
+                    document.getElementById("h2").innerHTML = jsonArray[jsonArray.length - 1]["输出结果2"];
+                    // 获取表格元素
+                    var table = document.getElementById('myTable2');
+                    // 每次查询先清空表格
+                    table.innerHTML = "";
+                    //生成表格数据
+                    generateTableData(jsonArray, table);
+                } else {
+                    document.getElementById("msg").innerHTML = "。" + getStatusMessage(this.status);
                 }
             }
         }
 
-        // 发送请求
+        xhr.open('GET', "/mvc01_war_exploded/Servlet/ZfblServlet2?inputText=" + inputText);
         xhr.send();
     }
+
+    /*AJAX请求post请求，每日自负比例更新*/
+    var form = document.getElementById("myForm");
+    form.addEventListener("submit", function (event) {
+        event.preventDefault(); // 阻止表单默认提交行为
+
+        // 获取表单元素的值
+        var input1 = form.elements["input1"].value;
+        var input2 = form.elements["input2"].value;
+        var params = "input1=" + input1 + "&input2=" + input2;
+
+        // 创建包含表单元素值的JSON数据
+        var data = {
+            "input1": input1,
+            "input2": input2
+        };
+        /*----------------处理第一个请求：返回his自负比例。开始---------------------*/
+        // 创建XMLHttpRequest对象并发送POST请求
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/mvc01_war_exploded/Servlet/ZfblSelect", true);
+
+        // 设置请求头的Content-type属性为application/json
+        xhr.setRequestHeader("Content-type", "application/json");//"application/x-www-form-urlencoded"
+
+        // 监听异步请求的状态，并在状态为4且响应状态为200时处理响应
+        xhr.onreadystatechange = function () {
+            //请求状态信息
+            document.getElementById("msg3").innerHTML = getReadyStateMessage(this.readyState);
+
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    //Http状态码
+                    document.getElementById("msg3").innerHTML += "。" + getStatusMessage(this.status);
+                    // 解析
+                    var jsonArray = JSON.parse(xhr.responseText);
+                    //输出结果
+                    document.getElementById("h3").innerHTML = jsonArray[jsonArray.length - 1]["输出结果2"];
+                    // 每次查询先清空表格
+                    document.getElementById("myTable3").innerHTML = "";
+                    //如果返回的json数组长度为1，说明没有返回集，不生成表格数据
+                    if (jsonArray.length > 1) {
+                        generateTable(jsonArray, "myTable3");
+                    }
+                } else {
+                    document.getElementById("msg3").innerHTML = "。" + getStatusMessage(this.status);
+                }
+            }
+        }
+
+        // 发送包含JSON数据的POST请求
+        xhr.send(JSON.stringify(data));
+        /*----------------处理第一个请求，结束---------------------*/
+
+        /*----------------处理第二个请求get：查询单个自付比例。开始---------------------*/
+        var xhr2 = new XMLHttpRequest();
+        xhr2.open('GET', "/mvc01_war_exploded/Servlet/ZfblServlet?inputText=" + input2);
+        // 设置回调函数，处理响应结果
+        xhr2.onreadystatechange = function () {
+            console.log(xhr2.readyState);
+            if (xhr2.readyState === 4 && xhr2.status === 200) {
+                var jsonArray2 = JSON.parse(xhr2.responseText);
+                document.getElementById("h").innerHTML = jsonArray2[jsonArray2.length - 1]["输出结果2"];
+                var table = document.getElementById('myTable');
+                table.innerHTML = "";
+                if (jsonArray2.length > 1) {
+                    generateTable1(jsonArray2, "myTable");
+                }
+            }
+        }
+        xhr2.send();
+        /*----------------处理第二个请求，结束---------------------*/
+
+        /*----------------处理第三个post请求：查询地纬自负比例。开始---------------------*/
+        var xhr4 = new XMLHttpRequest();
+        xhr4.open("POST", "/mvc01_war_exploded/Servlet/dwzfblSelect", true);
+        xhr4.setRequestHeader("Content-type", "application/json");
+
+        xhr4.onreadystatechange = function () {
+            console.log(xhr4.readyState);
+            if (xhr4.readyState === 4 && xhr4.status === 200) {
+                var jsonArray4 = JSON.parse(xhr4.responseText);
+                document.getElementById("h4").innerHTML = jsonArray4[jsonArray4.length - 1]["输出结果2"];
+                var table = document.getElementById('myTable4');
+                table.innerHTML = "";
+                if (jsonArray4.length > 1) {
+                    generateTable(jsonArray4, "myTable4");
+                }
+            }
+        }
+        xhr4.send(JSON.stringify(data));
+        /*----------------处理第三个请求，结束---------------------*/
+
+
+    });
+
+    /*AJAX请求post请求，更新自负比例*/
+    function updateZyZfbl(zyh, fyid, fssj, bxbm, zfbl, blbcr, sfsc, fypdh, sxh) {
+
+        // 创建包含表单元素值的JSON数据
+        var data = {
+            "zyh": zyh,
+            "fyid": fyid,
+            "fssj": fssj,
+            "bxbm": bxbm,
+            "zfbl": zfbl,
+            "blbcr": blbcr,//his比例保存人
+            "sfsc": sfsc,//his是否上传
+            "fypdh": fypdh,//地纬费用凭单号
+            "sxh": sxh //凭单顺序号
+        };
+
+        var url, msg, h;
+        switch (fypdh) {
+            case null:
+                url = "/mvc01_war_exploded/Servlet/ZfblUpdate";
+                msg = "msg3";
+                h = "h3";
+                break;
+            default:
+                url = "/mvc01_war_exploded/Servlet/dwzfblUpdate";
+                msg = "msg4";
+                h = "h4";
+        }
+
+        // 创建XMLHttpRequest对象并发送POST请求
+        var xhr = new XMLHttpRequest();
+
+        xhr.open("POST", url, true);
+
+        // 设置请求头的Content-type属性为application/json
+        xhr.setRequestHeader("Content-type", "application/json");
+
+        // 监听异步请求的状态，并在状态为4且响应状态为200时处理响应
+        xhr.onreadystatechange = function () {
+            //请求状态信息
+            document.getElementById(msg).innerHTML = getReadyStateMessage(this.readyState);
+
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    //Http状态码
+                    document.getElementById(msg).innerHTML += " " + getStatusMessage(this.status);
+                    // 解析输出
+                    var jsonArray = JSON.parse(xhr.responseText);
+                    document.getElementById(h).innerHTML = jsonArray[jsonArray.length - 1]["输出结果1"];
+                } else {
+                    document.getElementById(msg).innerHTML = " " + getStatusMessage(this.status);
+                }
+            }
+        }
+
+        // 发送包含JSON数据的POST请求
+        xhr.send(JSON.stringify(data));
+    }
+
+    /*AJAX请求post请求，更新地纬自负比例*/
+    function updateZyZfblDW(zyh, fyid, fssj, bxbm, zfbl, blbcr, fypdh, sxh) {
+
+        // 创建包含表单元素值的JSON数据
+        var data = {
+            "zyh": zyh,
+            "fyid": fyid,
+            "fssj": fssj,
+            "bxbm": bxbm,
+            "zfbl": zfbl,
+            "blbcr": blbcr,//his比例保存人
+            "fypdh": fypdh,//地纬费用凭单号
+            "sxh": sxh //凭单顺序号
+        };
+
+        // 创建XMLHttpRequest对象并发送POST请求
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/mvc01_war_exploded/Servlet/ZfblUpdate", true);
+
+        // 设置请求头的Content-type属性为application/json
+        xhr.setRequestHeader("Content-type", "application/json");
+
+        // 监听异步请求的状态，并在状态为4且响应状态为200时处理响应
+        xhr.onreadystatechange = function () {
+            //请求状态信息
+            document.getElementById("msg3").innerHTML = getReadyStateMessage(this.readyState);
+
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    //Http状态码
+                    document.getElementById("msg3").innerHTML += "。" + getStatusMessage(this.status);
+                    // 解析
+                    var jsonArray = JSON.parse(xhr.responseText);
+                    //输出结果
+                    document.getElementById("h3").innerHTML = jsonArray[jsonArray.length - 1]["输出结果1"];
+
+                } else {
+                    document.getElementById("msg3").innerHTML = "。" + getStatusMessage(this.status);
+                }
+            }
+        }
+
+        // 发送包含JSON数据的POST请求
+        xhr.send(JSON.stringify(data));
+    }
+
+    //清空
+    function clear3() {
+        document.getElementById('input1').value = '';
+        document.getElementById('input2').value = '';
+        document.getElementById('myTable3').innerHTML = '';
+        document.getElementById('h3').innerHTML = '';
+        document.getElementById('msg3').innerHTML = ''
+    }
+
+    function clear2() {
+        document.getElementById('inputText2').value = '';
+        document.getElementById('myTable2').innerHTML = '';
+        document.getElementById('h2').innerHTML = '';
+        document.getElementById('msg').innerHTML = ''
+    }
+
+    function clear1() {
+        document.getElementById('inputText').value = '';
+        document.getElementById('myTable').innerHTML = '';
+        document.getElementById('h').innerHTML = '';
+        document.getElementById('msg1').innerHTML = ''
+    }
+
+    //input回车事件
+    document.getElementById("inputText").addEventListener("keyup", function (event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            document.getElementById("myBtn").click();
+        }
+    });
+    document.getElementById("inputText2").addEventListener("keyup", function (event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            document.getElementById("myBtn2").click();
+        }
+    });
+
+    //根据json数组字符串自动生成表格(数组中的所有json对象)
+    function generateTableData(data, table) {
+        // 创建表头
+        var tableHead = table.createTHead();
+        var tableHeadRow = tableHead.insertRow();
+        Object.keys(data[0]).forEach(function (key) {
+            var tableHeadCell = tableHeadRow.insertCell();
+            tableHeadCell.innerHTML = key;
+        });
+
+        // 创建表格数据
+        var tableBody = table.createTBody();
+        data.forEach(function (item) {
+            var tableBodyRow = tableBody.insertRow();
+            Object.values(item).forEach(function (value) {
+                var tableBodyCell = tableBodyRow.insertCell();
+                tableBodyCell.innerHTML = value;
+            });
+        });
+    }
+
+    /*-------根据json数组字符串自动生成表格（包含操作列，<th>）--------*/
+    function generateTable(data, tableID) {
+        // 获取表对象
+        var table = document.getElementById(tableID);
+        // 创建表头
+        var tableHead = table.createTHead();
+        var tableHeadRow = tableHead.insertRow();
+        //遍历json键值
+        var i=0;
+        for (var key in data[0]) {
+            var th = document.createElement("th");
+            th.textContent = key.toUpperCase();
+            tableHeadRow.appendChild(th);
+        }
+        //添加操作列
+        var th = document.createElement("th");
+        var lastCell = tableHeadRow.appendChild(th);
+        lastCell.innerHTML = "操作";
+
+        // 循环遍历JSON数组，并创建表格（不包括json最后一个）
+        var tableBody = table.createTBody();
+        for (var i = 0; i < data.length - 1; i++) {
+            var tableBodyRow = tableBody.insertRow();
+            var j = 0;
+            for (var key in data[i]) {
+                if (data[i].hasOwnProperty(key)) {
+                    var cell = tableBodyRow.insertCell(j);
+                    cell.innerHTML = data[i][key];
+                    j++;
+                }
+            }
+            //添加操作列
+            var lastCell = tableBodyRow.insertCell();
+            lastCell.innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+        }
+
+    }
+
+    //根据json数组字符串自动生成表格（不包含数组中最后一个json对象）
+    function generateTable1(jsonArray, tableID) {
+        var table = document.getElementById(tableID);
+        // 创建表头
+        var tableHead = table.createTHead();
+        var tableHeadRow = tableHead.insertRow();
+        Object.keys(jsonArray[0]).forEach(function (key) {
+            var tableHeadCell = tableHeadRow.insertCell();
+            tableHeadCell.innerHTML = key;
+        });
+
+        // 创建表体数据
+        var tableBody = table.createTBody();
+        // 循环遍历JSON数组，并创建表格（不包括json最后一个）
+        for (var i = 0; i < jsonArray.length - 1; i++) {
+            var tableBodyRow = tableBody.insertRow();
+            var j = 0;
+            for (var key in jsonArray[i]) {
+                if (jsonArray[i].hasOwnProperty(key)) {
+                    var cell = tableBodyRow.insertCell(j);
+                    cell.innerHTML = jsonArray[i][key];
+                    j++;
+                }
+            }
+        }
+    }
+
+    //输入内容校验
+    function checkInput(inputText) {
+        var value = inputText.trim();
+        if (value === '') {
+            return false;
+        }
+        /*        // 检查输入是否为8位数字
+                var pattern = /^\d{8}$/;
+                if (!pattern.test(inputText)) {
+                    return false;
+                }*/
+        return true;
+    }
+
+    function checkInputNum(inputText) {
+        var value = inputText.trim();
+        if (value === '') {
+            return false;
+        }
+        // 检查输入是否为8位数字
+        var pattern = /^\d{8}$/;
+        if (!pattern.test(inputText)) {
+            return false;
+        }
+        return true;
+    }
+
+    //根据不同的请求状态,返回相应的提示信息
+    function getReadyStateMessage(readyState) {
+        switch (readyState) {
+            case 0:
+                return "请求未初始化";
+            case 1:
+                return "服务器连接已建立...";
+            case 2:
+                return "请求已接收";
+            case 3:
+                return "请求处理中";
+            case 4:
+                return "请求已完成，且响应已就绪";
+            default:
+                return "未知状态";
+        }
+    }
+
+    //根据不同的HTTP状态码,返回相应的提示信息
+    function getStatusMessage(statusCode) {
+        switch (statusCode) {
+            case 200:
+                return "请求成功！";
+            case 400:
+                return "请求格式有误！";
+            case 401:
+                return "请求未经授权！";
+            case 403:
+                return "请求被服务器拒绝！";
+            case 404:
+                return "请求的资源不存在！";
+            case 500:
+                return "服务器内部错误！";
+            default:
+                return "未知错误！";
+        }
+    }
+
+    /*-------添加行--------*/
+    function addRow(tableID) {
+        var tableBody = document.getElementById(tableID).getElementsByTagName('tbody')[0];
+        var tableHead = document.getElementById(tableID).getElementsByTagName('thead')[0];
+        //获取表格列数
+        var columnCount = tableHead.getElementsByTagName('th').length;
+        alert(columnCount);
+        var index = getColumnIndex(tableID, "AGE");
+        var newRow = tableBody.insertRow();
+        for (let i = 0; i < columnCount; i++) {
+            if (i == columnCount - 1) {
+                var cell = newRow.insertCell(i);
+                cell.innerHTML = "<button onclick='saveRow(this)'>保存</button> <button onclick='cancelRow(this)'>取消</button>"
+            } else {
+                var cell = newRow.insertCell(i);
+                cell.innerHTML = "<input type='text' class='editable'>"
+            }
+        }
+    }
+
+    /*-------编辑行--------*/
+    function editRow(button) {
+        var row = button.parentNode.parentNode;
+        // 获取表格元素
+        var table = row.closest('table');
+        // 获取表格的 ID 属性值
+        var tableId = table.id;
+        var cells = row.getElementsByTagName("td");//每行单元格数量
+        var index = getColumnIndex(tableId, "自负比例");
+        var indexSfsc = getColumnIndex(tableId, "是否上传");
+
+        for (let i = 0; i < cells.length; i++) {
+            if (i == cells.length - 1) {
+                cells[i].innerHTML = "<button style='background-color: lightskyblue' onclick='updateRow(this)'>更新</button> <button style='background-color: lightskyblue' onclick='cancelRow(this)'>取消</button>";
+            } else if (i == index) {//自付比例
+                cells[i].setAttribute("original-value", cells[i].innerText);
+                cells[i].innerHTML = "<input style='background-color: lightskyblue';type='text' value='" + cells[i].innerText + "'>";
+            } else if (i == indexSfsc) {
+                //包含是否上传列，并且是否上传=0,将原值赋给original-value属性
+                cells[i].setAttribute("original-value", cells[i].innerText);
+                if (cells[i].getAttribute("original-value") == 0) {
+                    cells[i].innerHTML = "<input style='background-color: lightskyblue';type='text' value='" + cells[i].innerText + "'>";
+                }
+
+            }
+        }
+    }
+
+    /*-------删除行--------*/
+    function deleteRow(button) {
+        var row = button.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    }
+
+    /*-------保存行--------*/
+    function saveRow(button) {
+        var row = button.parentNode.parentNode;
+        // 获取表格元素
+        var table = row.closest('table');
+        // 获取表格的 ID 属性值
+        var tableId = table.id;
+        var cells = row.getElementsByTagName("td");
+
+        for (let i = 0; i < cells.length; i++) {
+            if (i == cells.length - 1) {
+                cells[i].innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+            } else {
+                cells[i].innerHTML = cells[i].getElementsByTagName("input")[0].value;
+            }
+        }
+    }
+
+    /*-------更新行：更新特定列的数据--------*/
+    function updateRow(button) {
+        // 获取行元素
+        var row = button.parentNode.parentNode;
+        //获取行最近的表格
+        var table = row.closest('table');
+        // 获取表格ID
+        var tableId = table.id;
+        //获取该行所有单元格
+        var cells = row.getElementsByTagName("td");
+
+        //获取列索引
+        var index = getColumnIndex(tableId, "自负比例");//修改前表格比例
+        var indexFyid = getColumnIndex(tableId, "费用ID");
+        var indexBxbm = getColumnIndex(tableId, "保险编码");
+        var indexFssj = getColumnIndex(tableId, "发生时间");
+        var indexZyh = getColumnIndex(tableId, "住院号");
+        var indexBlbcr = getColumnIndex(tableId, "比例保存人");
+        var indexSfsc = getColumnIndex(tableId, "是否上传");
+        var indexFypdh = getColumnIndex(tableId, "费用凭单号");
+        var indexSxh = getColumnIndex(tableId, "顺序号");
+        var indexYlxmbm = getColumnIndex(tableId, "医疗项目编码");
+        var indexZylsh = getColumnIndex(tableId, "住院流水号");
+
+        //初始化，否则如果列不存在，报错
+        var fyid = bxbm = zyh = blbcr = fssj = sfscInput = fypdh = sxh = sfsc = null;
+
+        /*--------------更新表格数据------------------------*/
+        for (let i = 0; i < cells.length; i++) {
+            if (i == cells.length - 1) {
+                cells[i].innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+            } else if (i == index) {
+                var inputValue = cells[i].getElementsByTagName("input")[0].value;
+                cells[i].innerHTML = inputValue;
+            } else if (i == indexSfsc && cells[i].getAttribute("original-value") == 0) {
+                //列存在且原始值=0的情况下更新。只有原始值=0的情况下，才有编辑框
+                var inputValue = cells[i].getElementsByTagName("input")[0].value;
+                cells[i].innerHTML = inputValue;
+            }
+        }
+
+        /*--------------更新数据库------------------------*/
+        //获取最新的表格数据
+        if (indexFyid !== 99) {//his表格
+            fyid = cells[indexFyid].innerText;
+            bxbm = cells[indexBxbm].innerText;
+            zyh = cells[indexZyh].innerText;
+            blbcr = cells[indexBlbcr].innerText;
+            fssj = cells[indexFssj].innerText;
+            sfscInput = cells[indexSfsc].innerText;//修改后的是否上传标志
+        }
+        if (indexFypdh !== 99) {//地纬表格
+            bxbm = cells[indexYlxmbm].innerText;
+            fypdh = cells[indexFypdh].innerText;
+            sxh = cells[indexSxh].innerText;
+        }
+
+        //修改自付比例
+        var inputZfbl = cells[index].innerText;
+        if (inputZfbl != cells[index].getAttribute("original-value")) {
+            if (confirm("自付比例" + cells[index].getAttribute("original-value") + "修改为" + inputZfbl)) {
+                /*AJAX请求post请求，修改数据库自负比例*/
+                updateZyZfbl(zyh, fyid, fssj, bxbm, inputZfbl, blbcr, sfscInput, fypdh, sxh);
+            } else {
+                return;//返回
+            }
+        }
+
+        //修改上传标志
+        //包含此列且有修改行为
+        if ((indexSfsc != 99) && (sfscInput != cells[indexSfsc].getAttribute("original-value"))) {
+            //上传标志只能修改为 1
+            if (sfscInput == 1) {
+                if (confirm("是否上传 " + cells[indexSfsc].getAttribute("original-value") + "修改为" + sfscInput)) {
+
+                    /*AJAX请求post请求，修改数据库自负比例*/
+                    /*---------------补充------------*/
+                    updateZyZfbl(zyh, fyid, fssj, bxbm, inputZfbl, blbcr, sfscInput, fypdh, sxh);
+                } else {
+                    return;//返回
+                }
+            } else {
+                alert("是否上传只能修改为1，修改之前请先清除住院费用！！！！");
+            }
+        }
+
+    }
+
+    /*-------取消行--------*/
+    function cancelRow(button) {
+        var row = button.parentNode.parentNode;
+        // 获取表格元素
+        var table = row.closest('table');
+        // 获取表格的 ID 属性值
+        var tableId = table.id;
+        var cells = row.getElementsByTagName("td");
+        var index = getColumnIndex(tableId, "自负比例");
+        var indexSfsc = getColumnIndex(tableId, "是否上传");
+        //还原单元格
+        for (let i = 0; i < cells.length; i++) {
+            if (i == cells.length - 1) {
+                cells[i].innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+            } else if (i == index) {
+                cells[i].innerHTML = cells[i].getAttribute("original-value");
+            } else if (i == indexSfsc) {
+                //如果包含此列，将原值还原
+                cells[i].innerHTML = cells[i].getAttribute("original-value");
+            }
+        }
+    }
+
+    /*    ---------------获取表格中某一列的索引--------------
+        tableID：表格id
+        columnName：列名
+        返回：列的索引，如果没有返回 99*/
+    function getColumnIndex(tableID, columnName) {
+        //获取表格对象
+        var table = document.getElementById(tableID);
+
+        // 获取头部行对象
+        const headerRow = table.querySelector('thead tr');
+
+        // 获取所有表头单元格对象
+        const headerCells = headerRow.querySelectorAll('th');
+
+        // 定义一个变量来存储“年龄”列的列号
+        let columnIndex = 99;
+
+        // 遍历表头单元格对象，找到列的列号
+        headerCells.forEach((cell, index) => {
+            if (cell.innerText === columnName) {
+                columnIndex = index;
+            }
+        });
+        return columnIndex;
+    }
+
 </script>
+
 </html>

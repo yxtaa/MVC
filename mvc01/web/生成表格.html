@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+
+<body>
+
+<table id="myTable">
+</table>
+
+<DIV ID="div">
+
+</DIV>
+
+</body>
+
+
+<script>
+  // 假设您有一个JSON数组
+  var data = [
+      { name: '张三', age: 18, gender: '男' },
+      { name: '李四', age: 20, gender: '女' },
+      { name: '王五', age: 22, gender: '男' }
+  ];
+   var name = "name";
+   document.getElementById("div").innerHTML = data[data.length-1][name];
+
+  var table = document.getElementById('myTable');
+
+  generateTableData(data, table);
+
+
+  //根据json数组字符串自动生成表格
+  function generateTableData(data, table) {
+      console.log("jinlaile")
+      // 创建表头
+      var tableHead = table.createTHead();
+      var tableHeadRow = tableHead.insertRow();
+      Object.keys(data[0]).forEach(function(key) {
+          var tableHeadCell = tableHeadRow.insertCell();
+          tableHeadCell.innerHTML = key;
+      })
+
+
+      // 创建表格数据
+      var tableBody = table.createTBody();
+      data.forEach(function(item) {
+          var tableBodyRow = tableBody.insertRow();
+          Object.values(item).forEach(function(value) {
+              var tableBodyCell = tableBodyRow.insertCell();
+              tableBodyCell.innerHTML = value;
+          })
+
+      })
+  }
+
+
+</script>
+</html>

@@ -27,6 +27,8 @@ public class SpServlet extends HttpServlet {
         //设置响应文本类型和字符集
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
+        request.setCharacterEncoding("UTF-8");//请求对象设置字符集编码
+        response.setHeader("Cache-Control", "no-cache");//响应对象设置头部缓存
         PrintWriter out = response.getWriter();
         SpService spService = new SpServiceImpl();
         //接收请求参数
@@ -40,9 +42,10 @@ public class SpServlet extends HttpServlet {
 
         //响应json数据
         String jsonString = JSON.toJSONString(mapList);
-        //out.print(jsonString);
+        out.print(jsonString);
+        out.close();
 
-        for (Object obj : mapList) {
+  /*      for (Object obj : mapList) {
             //判断该对象的类型，如果是Map类型，则将该对象转换为Map类型
             if (obj instanceof Map<?, ?>) {
                 Map<String, Object> map = (Map<String, Object>) obj;
@@ -54,6 +57,6 @@ public class SpServlet extends HttpServlet {
             } else {
                 out.println(obj.toString());
             }
-        }
+        }*/
     }
 }

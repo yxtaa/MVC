@@ -4,67 +4,183 @@
 <head>
     <meta charset="UTF-8">
     <title>住院结算</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 0.5em;
+            text-align: center;
+        }
+        thead {
+            background-color: gainsboro;
+        }
+    </style>
 </head>
 <body>
-<!--输入住院号：<input type="text" id="zyh">
-<button id="btn">确定</button>
-<hr>-->
-<h2>出院结算报错运行</h2>
-输入住院号<input type="text" id="inputText">
-<button onclick="sendRequest()">确定</button>
 
-<br><HR>
-<h3>运行结果：</h3>
-<div id="div"></div>
+<h3>出院结算报错</h3>
+输入住院号：<input type="text" id="inputText" onkeyup="this.value=this.value.replace(/[^0-9]/g,'');">
+<button onclick="sendRequest()" id="myBtn">确定</button>
+<br>
+<div id="msg"></div>
+<h3 id="result" style="color: red"></h3>
+<table id="myTable" style="text-align: center;">
+    <!--表格将在JavaScript代码中创建-->
+</table>
+<HR>
 
 </body>
 <script type="text/javascript">
-    //方法一：
-/*    document.getElementById("btn").onclick = function () {
+    //方法一
+    /*    document.getElementById("btn").onclick = function () {
 
-        var isSend = confirm("确定发送请求吗？");
-        if (!isSend) {
-            return; // 中断请求发送
-        }
-
-        //1.创建XHR对象 2.注册回调函数 3.开启通道 4.发送请求
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && this.status === 200) {
-                //var data = JSON.parse(responseText)
-                document.getElementById("div").innerHTML = xhr.responseText;
+            var isSend = confirm("确定发送请求吗？");
+            if (!isSend) {
+                return; // 中断请求发送
             }
-        }
-        var zyh = document.getElementById("inputText").value;
-        xhr.open("get", "/mvc01_war_exploded/servlet/SpServlet?zyh=" + zyh, true);
-        xhr.send();
-    }*/
 
-    //方法二：
+            //1.创建XHR对象 2.注册回调函数 3.开启通道 4.发送请求
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && this.status === 200) {
+                    //var data = JSON.parse(responseText)
+                    document.getElementById("div").innerHTML = xhr.responseText;
+                }
+            }
+            var zyh = document.getElementById("inputText").value;
+            xhr.open("get", "/mvc01_war_exploded/servlet/SpServlet?zyh=" + zyh, true);
+            xhr.send();
+        }*/
+
+    //方法二
     function sendRequest() {
+        var inputText = document.getElementById("inputText").value;
 
-        var isSend = confirm("确定发送请求吗？");
-        if (!isSend) {
+        if (!checkInput(inputText)) {
+            alert("输入有误，重新输入");
+            return;
+        }
+        if (!confirm("确定发送请求吗？")) {
             return; // 中断请求发送
         }
+
         // 创建XMLHttpRequest对象
         let xhr = new XMLHttpRequest();
 
         // 设置请求方式和请求地址
-        var inputText = document.getElementById("inputText").value;
-        var url = "/mvc01_war_exploded/servlet/SpServlet"
-        xhr.open('GET', url + "?inputText=" + inputText, true);
+        xhr.open('GET', "/mvc01_war_exploded/servlet/SpServlet?inputText=" + inputText, true);
 
         // 设置回调函数，处理响应结果
         xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                // 处理响应结果
-                document.getElementById("div").innerHTML = xhr.responseText;
+            //请求状态信息
+            document.getElementById("msg").innerHTML = getReadyStateMessage(this.readyState);
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    document.getElementById("msg").innerHTML += "/" + getStatusMessage(this.status);
+                    // 解析
+                    var jsonArray = JSON.parse(xhr.responseText);
+                    //输出结果
+                    document.getElementById("result").innerHTML = jsonArray[jsonArray.length - 1]["输出结果2"];
+                    // 获取表格元素
+                    var table = document.getElementById('myTable');
+                    // 每次查询先清空表格
+                    table.innerHTML = "";
+                    //生成表格数据，如果没有返回集，json长度=1，则不生成表格
+                    if (jsonArray.length == 2) {
+                        generateTableData(jsonArray, "myTable");
+                    }
+                } else {
+                    document.getElementById("msg").innerHTML += "/" + getStatusMessage(this.status);
+                }
             }
         };
 
         // 发送请求
         xhr.send();
     }
+
+    //回车事件
+    document.getElementById("inputText").addEventListener("keyup", function (event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            document.getElementById("myBtn").click();
+        }
+    });
+
+    //输入内容检查
+    function checkInput(inputText) {
+        var value = inputText.trim();
+        if (value === '') {
+            return false;
+        }
+        return true;
+    }
+
+    //根据不同的请求状态,返回相应的提示信息
+    function getReadyStateMessage(readyState) {
+        switch (readyState) {
+            case 0:
+                return "请求未初始化";
+            case 1:
+                return "服务器连接已建立...";
+            case 2:
+                return "请求已接收";
+            case 3:
+                return "请求处理中";
+            case 4:
+                return "请求已完成，且响应已就绪";
+            default:
+                return "未知状态";
+        }
+    }
+
+    //根据不同的HTTP状态码,返回相应的提示信息
+    function getStatusMessage(statusCode) {
+        switch (statusCode) {
+            case 200:
+                return "请求成功！";
+            case 400:
+                return "请求格式有误！";
+            case 401:
+                return "请求未经授权！";
+            case 403:
+                return "请求被服务器拒绝！";
+            case 404:
+                return "请求的资源不存在！";
+            case 500:
+                return "服务器内部错误！";
+            default:
+                return "未知错误！";
+        }
+    }
+
+    //根据json数组字符串自动生成表格（不包含数组中最后一个json对象）
+    function generateTableData(jsonArray, tableID) {
+        var table = document.getElementById(tableID);
+        // 创建表头
+        var tableHead = table.createTHead();
+        var tableHeadRow = tableHead.insertRow();
+        Object.keys(jsonArray[0]).forEach(function (key) {
+            var tableHeadCell = tableHeadRow.insertCell();
+            tableHeadCell.innerHTML = key;
+        });
+
+        // 创建表体数据
+        var tableBody = table.createTBody();
+        // 循环遍历JSON数组，并创建表格（不包括json最后一个）
+        for (var i = 0; i < jsonArray.length - 1; i++) {
+            var tableBodyRow = tableBody.insertRow();
+            var j = 0;
+            for (var key in jsonArray[i]) {
+                if (jsonArray[i].hasOwnProperty(key)) {
+                    var cell = tableBodyRow.insertCell(j);
+                    cell.innerHTML = jsonArray[i][key];
+                    j++;
+                }
+            }
+        }
+    }
+
+
 </script>
 </html>

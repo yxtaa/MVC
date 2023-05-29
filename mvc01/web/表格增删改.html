@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 0.2em;
+            width: 500px;
+            /* white-space: nowrap;*/
+            text-align: center;
+
+        }
+
+        thead {
+            background-color: gainsboro;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+<h1>表格增删改示例</h1>
+<input style="background-color: lightblue">
+<table id="myTable">
+    <thead>
+    <tr>
+        <th>姓名</th>
+        <th>年龄</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td class="editable">张三</td>
+        <td class="editable">20</td>
+        <td>
+            <button onclick="editRow(this)">编辑</button>
+            <button onclick="deleteRow(this)">删除</button>
+        </td>
+    </tr>
+    <tr>
+        <td class="editable">李四</td>
+        <td class="editable">25</td>
+        <td>
+            <button onclick="editRow(this)">编辑</button>
+            <button onclick="deleteRow(this)">删除</button>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<br>
+<button onclick="addRow()">添加</button>
+
+</body>
+<script type="text/javascript">
+    function msg() {
+        alert("点击");
+    }
+
+    // 添加行
+    function addRow() {
+        var tableBody = document.getElementById("myTable").getElementsByTagName('tbody')[0];
+        var thTags = document.getElementById("myTable").getElementsByTagName('th');//获取列数
+        var newRow = tableBody.insertRow();
+        for (let i = 0; i < thTags.length; i++) {
+            if (i == thTags.length - 1) {
+                var cell = newRow.insertCell(i);
+                cell.innerHTML = "<button onclick='saveRow(this)'>保存</button> <button onclick='cancelRow(this)'>取消</button>"
+            } else {
+                var cell = newRow.insertCell(i);
+                cell.innerHTML = "<input type='text'>"
+            }
+        }
+        /*       var cell1 = newRow.insertCell(0);
+               var cell2 = newRow.insertCell(1);
+               var cell3 = newRow.insertCell(2);
+               cell1.innerHTML = "<input type='text'>";
+               cell2.innerHTML = "<input type='text'>";
+               cell3.innerHTML = "<button onclick='saveRow(this)'>保存</button> <button onclick='cancelRow(this)'>取消</button>";
+           */
+    }
+
+    // 编辑行
+    function editRow(button) {
+        var row = button.parentNode.parentNode;
+        var cells = row.getElementsByTagName("td");//列数或单元格数量
+        for (let i = 0; i < cells.length; i++) {
+            if (i == cells.length - 1) {
+                cells[i].innerHTML = "<button onclick='updateRow(this)'>更新</button> <button onclick='cancelRow(this)'>取消</button>";
+            } else {
+                cells[i].setAttribute("original-value", cells[i].innerText);
+                cells[i].innerHTML = "<input type='text' value='" + cells[i].innerText + "'>";
+            }
+        }
+        /*
+                        cells[0].setAttribute("data-value", cells[0].innerText);
+                        cells[1].setAttribute("data-value", cells[1].innerText);
+                        cells[0].innerHTML = "<input type='text' value='" + cells[0].innerText + "'>";
+                        cells[1].innerHTML = "<input type='text' value='" + cells[1].innerText + "'>";
+                        cells[2].innerHTML = "<button onclick='updateRow(this)'>更新</button> <button onclick='cancelRow(this)'>取消</button>";
+        */
+    }
+
+    // 删除行
+    function deleteRow(button) {
+        var row = button.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    }
+
+    // 保存行
+    function saveRow(button) {
+        var row = button.parentNode.parentNode;
+        var cells = row.getElementsByTagName("td");
+        for (let i = 0; i < cells.length; i++) {
+            if (i == cells.length - 1) {
+                cells[i].innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+            } else {
+                cells[i].innerHTML = cells[i].getElementsByTagName("input")[0].value;
+            }
+        }
+        /*        cells[0].innerHTML = cells[0].getElementsByTagName("input")[0].value;
+                cells[1].innerHTML = cells[1].getElementsByTagName("input")[0].value;
+                cells[2].innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+            */
+    }
+
+    // 更新行
+    function updateRow(button) {
+        var row = button.parentNode.parentNode;
+        var cells = row.getElementsByTagName("td");
+        for (let i = 0; i < cells.length; i++) {
+            if (i == cells.length - 1) {
+                cells[i].innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+            } else {
+                cells[i].innerHTML = cells[i].getElementsByTagName("input")[0].value;
+            }
+        }
+
+        /*        cells[0].innerHTML = cells[0].getElementsByTagName("input")[0].value;
+                cells[1].innerHTML = cells[1].getElementsByTagName("input")[0].value;
+                cells[2].innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+            */
+    }
+
+    // 取消行
+    function cancelRow(button) {
+        var row = button.parentNode.parentNode;
+        var cells = row.getElementsByTagName("td");
+        for (let i = 0; i < cells.length; i++) {
+            if (i == cells.length - 1) {
+                cells[i].innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+            } else {
+                cells[i].innerHTML = cells[i].getAttribute("original-value");
+            }
+        }
+
+        /*        cells[0].innerHTML = cells[0].getAttribute("original-value");
+                cells[1].innerHTML = cells[1].getAttribute("original-value");
+                cells[2].innerHTML = "<button onclick='editRow(this)'>编辑</button> <button onclick='deleteRow(this)'>删除</button>";
+            */
+
+    }
+
+    /*---------------获取表格中某一列的索引--------------*/
+    function getColumnIndex(tableID, columnName) {
+        //获取表格对象
+        var table = document.getElementById(tableID);
+
+        // 获取头部行对象
+        const headerRow = table.querySelector('thead tr');
+
+        // 获取所有表头单元格对象
+        const headerCells = headerRow.querySelectorAll('th');
+
+        // 定义一个变量来存储“年龄”列的列号
+        let columnIndex = null;
+
+        // 遍历表头单元格对象，找到“年龄”列的列号
+        headerCells.forEach((cell, index) => {
+            if (cell.innerText === columnName) {
+                columnIndex = index;
+                // 输出“年龄”列的列号
+                return columnIndex;
+            }
+        });
+    }
+
+    /*---------------可编辑的单元格双击编辑事件--------------*/
+    // 获取所有可编辑的单元格
+    const editableCells = document.querySelectorAll('.editable');
+
+    // 循环遍历可编辑单元格，给每个单元格添加双击事件
+    editableCells.forEach(cell => {
+        cell.addEventListener('dblclick',editRow);
+    });
+
+</script>
+</html>
